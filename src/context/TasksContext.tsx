@@ -3,6 +3,7 @@ import React, {
   FunctionComponent,
   ReactElement,
   createContext,
+  useContext,
   useEffect,
   useState,
 } from 'react';
@@ -19,6 +20,7 @@ export interface ITask {
 export interface ITasksContext {
   tasks: ITask[];
   addTask(task: ITask): void;
+  removeTask(id: string): void;
 }
 
 const tasksData = '@MyTasks:Tasks';
@@ -40,6 +42,17 @@ export const TasksProvider: FunctionComponent<IProps> = ({children}) => {
     }
   };
 
+  const removeTask = async (id: string) => {
+    const newTaskList = data.filter(task => task.id !== id);
+    setData(newTaskList);
+
+    try {
+      await AsyncStorage.setItem(tasksData, JSON.stringify(newTaskList));
+    } catch (error) {
+      throw new Error(error as string);
+    }
+  };
+
   useEffect(() => {
     async function loadTasks() {
       const taskList = await AsyncStorage.getItem(tasksData);
@@ -53,8 +66,18 @@ export const TasksProvider: FunctionComponent<IProps> = ({children}) => {
   }, []);
 
   return (
-    <TasksContext.Provider value={{tasks: data, addTask}}>
+    <TasksContext.Provider value={{tasks: data, addTask, removeTask}}>
       {children}
     </TasksContext.Provider>
   );
 };
+
+export function useTaskList(): ITasksContext {
+  const context = useContext(TasksContext);
+
+  if (!context) {
+    throw new Error('useTaskList deve ser usado em um TaskProvider');
+  }
+
+  return context;
+}
