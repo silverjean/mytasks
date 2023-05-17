@@ -30,6 +30,7 @@ export const TaskList = () => {
       keyExtractor={item => item.id}
       renderItem={({item}) => (
         <TouchableOpacity
+          testID="removeButton"
           onPress={() => handleRemoveTask(item.id)}
           style={styles.buttonTask}
           activeOpacity={0.4}>
